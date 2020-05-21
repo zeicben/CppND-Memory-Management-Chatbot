@@ -21,7 +21,7 @@ ChatBot::ChatBot()
 ChatBot::ChatBot(std::string filename)
 {
     std::cout << "ChatBot Constructor" << std::endl;
-    
+
     // invalidate data handles
     _chatLogic = nullptr;
     _rootNode = nullptr;
@@ -32,11 +32,12 @@ ChatBot::ChatBot(std::string filename)
 
 ChatBot::~ChatBot()
 {
-    std::cout << "ChatBot Destructor" << std::endl;
+    printf("ChatBot Destructor %p\n", this);
 
     // deallocate heap memory
-    if(_image != NULL) // Attention: wxWidgets used NULL and not nullptr
+    if (_image != NULL) // Attention: wxWidgets used NULL and not nullptr
     {
+        std::cout << "Attempt image deletion\n";
         delete _image;
         _image = NULL;
     }
@@ -44,6 +45,96 @@ ChatBot::~ChatBot()
 
 //// STUDENT CODE
 ////
+
+// Exclusive ownership policy.
+// That means:
+// - copy constructor invalidates old object's resource handlers
+// - copy assignment operator does the same, but also returns pointer to new obj
+// - move constructor invalidates old object's resource handlers
+// - move assignment operator invalidates and returns pointer to object
+
+// Copy constructor - exclusive ownership
+ChatBot::ChatBot(ChatBot &source)
+{
+    std::cout << "ChatBot copy constructor\n";
+    // Copy all the pointers from the previous `chatBot`
+    _image = source._image;
+    _currentNode = source._currentNode;
+    _rootNode = source._rootNode;
+    _chatLogic = source._chatLogic;
+    // // Invalidate all the pointers of the previos `chatBot`
+    source._image = nullptr;
+    source._currentNode = nullptr;
+    source._rootNode = nullptr;
+    source._chatLogic = nullptr;
+}
+// Copy assignment operator - exclusive ownership
+ChatBot &ChatBot::operator=(ChatBot &source)
+{
+    std::cout << "ChatBot copy assignment operator\n";
+    // Deallocate the image of the current `chatBot`
+    // Check for self assignment
+    if (&source == this)
+        return *this;
+    if (_image != nullptr)
+        delete _image;
+    // Copy all the pointers from the previous `chatBot`
+    _image = source._image;
+    _currentNode = source._currentNode;
+    _rootNode = source._rootNode;
+    _chatLogic = source._chatLogic;
+    // Invalidate all the pointers to various resources
+    source._image = nullptr;
+    source._currentNode = nullptr;
+    source._rootNode = nullptr;
+    source._chatLogic = nullptr;
+    return *this;
+}
+// Move constructor - exclusive ownership
+ChatBot::ChatBot(ChatBot &&source)
+{
+    std::cout << "ChatBot move constructor\n";    
+    // Copy image's pointer from previous `chatBot`
+    _image = source._image;
+    // Copy all the pointers from the previous `chatBot`
+    _currentNode = source._currentNode;
+    _rootNode = source._rootNode;
+    _chatLogic = source._chatLogic;
+    // Invalidate all the pointers to various resources
+    source._image = nullptr;
+    source._currentNode = nullptr;
+    source._rootNode = nullptr;
+    source._chatLogic = nullptr;
+}
+// Move assignment operator
+ChatBot &ChatBot::operator=(ChatBot &&source)
+{
+    // Must steal the rvalue's resources
+    std::cout << "ChatBot move assignment operator\n";
+    // Check for self assignment
+    if (&source == this)
+        return *this;
+    // Deallocate the image from the current object
+    if (_image != nullptr)
+        delete _image;
+    // Steal resources from the temporary object
+    _image = source._image;
+    _currentNode = source._currentNode;
+    _rootNode = source._rootNode;
+    _chatLogic = source._chatLogic;
+    // Invalidate pointers
+    source._image = nullptr;
+    source._currentNode = nullptr;
+    source._rootNode = nullptr;
+    source._chatLogic = nullptr;
+
+    return *this;
+}
+
+void ChatBot::UpdateChatBotInChatLogic() {
+    this -> _chatLogic -> SetChatbotHandle(this);
+}
+
 
 ////
 //// EOF STUDENT CODE
@@ -86,6 +177,7 @@ void ChatBot::SetCurrentNode(GraphNode *node)
 {
     // update pointer to current node
     _currentNode = node;
+    // std::cout << "Does the code reach this point?\n";
 
     // select a random node answer (if several answers should exist)
     std::vector<std::string> answers = _currentNode->GetAnswers();
@@ -93,8 +185,13 @@ void ChatBot::SetCurrentNode(GraphNode *node)
     std::uniform_int_distribution<int> dis(0, answers.size() - 1);
     std::string answer = answers.at(dis(generator));
 
+    // std::cout << "Does the code reach this point?\n";
+
+    // std::cout << "answer is " << answer << "\n";
+    /// HERE lies the error
     // send selected node answer to user
     _chatLogic->SendMessageToUser(answer);
+
 }
 
 int ChatBot::ComputeLevenshteinDistance(std::string s1, std::string s2)
