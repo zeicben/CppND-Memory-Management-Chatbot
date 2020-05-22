@@ -13,19 +13,7 @@
 
 ChatLogic::ChatLogic()
 {
-    //// STUDENT CODE
-    ////
     std::cout << "ChatLogic Constructor\n";
-
-    std::cout << "ChatBot created here\n";
-    // create instance of chatbot
-    _chatBot = new ChatBot("../images/chatbot.png");
-
-    // add pointer to chatlogic so that chatbot answers can be passed on to the GUI
-    _chatBot->SetChatLogicHandle(this);
-
-    ////
-    //// EOF STUDENT CODE
 }
 
 ChatLogic::~ChatLogic()
@@ -33,27 +21,6 @@ ChatLogic::~ChatLogic()
     //// STUDENT CODE
     ////
     std::cout << "ChatLogic Destructor\n";
-
-    // Before deleting the chatbot instance, we must assure that anyone that
-    // has ownership of `_chatBot` nullifies the resource.
-    // ChatBot instance will be deleted by th enode that holds it
-
-    // // Nodes are managed by unique_ptr, so they need not to be deleted manually
-    // for (auto it = std::begin(_nodes); it != std::end(_nodes); ++it)
-    // {
-    //     // std::cout << "Error happens here \n";
-    //     delete *it;
-    // }
-
-    // delete all edges
-    /// DELETED - Edges will be managed by GraphNodes
-    // for (auto it = std::begin(_edges); it != std::end(_edges); ++it)
-    // {
-    //     delete *it;
-    // }
-
-    ////
-    //// EOF STUDENT CODE
 }
 
 template <typename T>
@@ -177,9 +144,7 @@ void ChatLogic::LoadAnswerGraphFromFile(std::string filename)
                             /// so, we apply `(*childNode).get()` to get a pointer to the object managed by unique_ptr
                             edge->SetChildNode((*childNode).get());
                             edge->SetParentNode((*parentNode).get());
-                            /// MODIFIED - passed a raw pointer to the edge, because this class will
-                            /// no longer own the edges
-                            _edges.push_back(edge.get());
+                            /// DELETED
 
                             // find all keywords for current node
                             /// NO NEED TO MODIFY - dereferencing unique_ptr is the same as dereferencing raw pointer 
